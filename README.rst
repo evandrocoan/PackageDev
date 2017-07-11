@@ -299,3 +299,6 @@ Sublime Library
 PackageDev previously included ``sublime_lib``,
 a Python module with utilities for plugin developers.
 It will be made available as a Package Control dependency soon™.
+
+## License
+See the `LICENSE.txt` file under this repository.
