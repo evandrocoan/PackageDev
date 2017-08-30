@@ -9,7 +9,7 @@ import weakref
 import sublime
 
 from ..lib.weakmethod import WeakMethodProxy
-from ..lib import get_setting
+from ..lib import get_setting, sorted_completions
 from .region_math import VALUE_SCOPE, get_value_region_at, get_last_key_name_from
 
 l = logging.getLogger(__name__)
@@ -29,17 +29,13 @@ def html_encode(string):
 
 def format_completion_item(value, default=False):
     """Create a completion item with its type as description."""
+    if isinstance(value, dict):
+        return
     default_str = "(default) " if default else ""
     return ("{0}  \t{2}{1}".format(sublime.encode_value(value).strip('"'),
                                    type(value).__name__,
                                    default_str),
-            # 'cast' dicts to frozen sets, because those are hashable
-            frozenset(value.items()) if isinstance(value, dict) else value)
-
-
-def sorted_completions(completions):
-    """Sort completions case insensitive."""
-    return list(sorted(completions, key=lambda x: x[0].lower()))
+            value)
 
 
 def decode_value(string):
@@ -308,18 +304,11 @@ class KnownSettings(object):
             # the default value from base file
             default = html_encode(
                 sublime.encode_value(self.defaults.get(key), pretty=True))
-            # prepare a link to add the settings to user file or jump to its
-            # position for editing, if the item in side-by-side setting's
-            # base view is hoverd
-            if view.settings().get('edit_settings_view') == 'base':
-                edit = "<a href=\"edit:{0}\">✏</a>".format(key)
-            else:
-                edit = ""
         else:
-            comment, default, edit = "No description.", "unknown setting", ""
+            comment, default = "No description.", "unknown setting"
         # format tooltip html content
         return (
-            "<h1>{key} {edit}</h1>"
+            "<h1>{key}</h1>"
             "<h2>Default: {default}</h2>"
             "<p>{comment}</p>"
         ).format(**locals())
@@ -612,11 +601,10 @@ class KnownSettings(object):
             {(trigger, contents), ...}
                 A set of all completions.
         """
+        completions = set()
         comment = self.comments.get(key)
         if not comment:
-            return set()
-
-        completions = set()
+            return completions
 
         for match in re.finditer(r"`([^`\n]+)`", comment):
             # backticks should wrap the value in JSON representation,
@@ -630,6 +618,9 @@ class KnownSettings(object):
                 # Suggest list items as completions instead of a string
                 # representation of the list.
                 completions.update(format_completion_item(v) for v in value)
+            elif isinstance(value, dict):
+                # TODO what should we do with dicts?
+                pass
             else:
                 completions.add(format_completion_item(value))
 
@@ -656,8 +647,8 @@ class KnownSettings(object):
             {(trigger, contents), ...}
                 A set of all completions.
         """
-        if default is None:
-            return None
+        if default is None or default is "":
+            return set()
         elif isinstance(default, bool):
             return {format_completion_item(True), format_completion_item(False)}
         elif isinstance(default, list):

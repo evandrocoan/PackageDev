@@ -1,12 +1,13 @@
 # import ST-interfacing classes from sub-modules
 
+from .command_completions import *  # noqa
 from .file_conversion import *  # noqa
 from .new_resource_file import *  # noqa
 from .settings import *  # noqa
 from .snippet_dev import *  # noqa
 from .syntax_dev import *  # noqa
 from .syntax_dev_legacy import *  # noqa
-from .syntax_test_dev import *  # noqa
+from .syntaxtest_dev import *  # noqa
 
 from . import xml_hidden_extensions_hotfix
 

@@ -17,12 +17,13 @@ def _build_path(sub_package_name, file_name=None, textmate=False):
 
 # paths to our package
 PLIST              = _build_path("Property List")
-BUILD_SYSTEM       = _build_path("Sublime Text Build System", textmate=True)
-COMMANDS           = _build_path("Sublime Text Commands", "Sublime Commands", textmate=True)
-COMPLETIONS        = _build_path("Sublime Text Completions", "Sublime Completions", textmate=True)
+BUILD_SYSTEM       = _build_path("Sublime Text Build System")
+COMMANDS           = _build_path("Sublime Text Commands")
+COMPLETIONS        = _build_path("Sublime Text Completions")
 KEYMAP             = _build_path("Sublime Text Keymap")
-MACROS             = _build_path("Sublime Text Macros", textmate=True)
-MOUSEMAP           = _build_path("Sublime Text Mousemap", "Sublime Mouse Map", textmate=True)
+MACROS             = _build_path("Sublime Text Macros")
+MENU               = _build_path("Sublime Text Menu")
+MOUSEMAP           = _build_path("Sublime Text Mousemap")
 SETTINGS           = _build_path("Sublime Text Settings")
 SNIPPET            = _build_path("Sublime Text Snippet")
 SNIPPET_RAW        = _build_path("Sublime Text Snippet", "Sublime Text Snippet (Raw)")
