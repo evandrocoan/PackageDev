@@ -7,40 +7,48 @@
       "default": "{\n\t$0\n}\n"
     }
   },
+  { "caption": "PackageDev: View Documentation",
+    "command": "open_url",
+    "args": {"url": "https://github.com/SublimeText/PackageDev/wiki"},
+  },
+
+  { "caption": "PackageDev: Create Package",
+    "command": "packagedev_create_package",
+  },
 
   // Snippets
   { "caption": "PackageDev: New Raw Snippet",
-    "command": "new_resource_file",
+    "command": "packagedev_new_resource",
     "args": {"kind": "snippet_raw"}
   },
   { "caption": "PackageDev: New Raw Snippet from Snippet",
-    "command": "new_raw_snippet_from_snippet" },
+    "command": "packagedev_raw_snippet_from_snippet" },
   { "caption": "PackageDev: Generate Snippet from Raw Snippet",
-    "command": "generate_snippet_from_raw_snippet" },
+    "command": "packagedev_snippet_from_raw_snippet" },
 
   // Syntax Definitions (create)
   { "caption": "PackageDev: New Syntax Definition",
-    "command": "new_resource_file",
+    "command": "packagedev_new_resource",
     "args": {"kind": "syntax_def"}
   },
   { "caption": "PackageDev: New TextMate Syntax Definition",
-    "command": "new_resource_file",
+    "command": "packagedev_new_resource",
     "args": {"kind": "tm_syntax_def"}
   },
   { "caption": "PackageDev: New TextMate Syntax Definition (JSON)",
-    "command": "new_resource_file",
+    "command": "packagedev_new_resource",
     "args": {"kind": "tm_syntax_def_json"}
   },
   { "caption": "PackageDev: New TextMate Syntax Definition (YAML)",
-    "command": "new_resource_file",
+    "command": "packagedev_new_resource",
     "args": {"kind": "tm_syntax_def_yaml"}
   },
   // Syntax Definitions (convert)
   { "caption": "PackageDev: Convert (YAML, JSON, PList) to…",
-    "command": "convert_file"
+    "command": "packagedev_convert"
   },
   { "caption": "PackageDev: Convert to YAML and Rearrange Syntax Definition",
-    "command": "convert_file",
+    "command": "packagedev_convert",
     "args": {
       "target_format": "yaml",
       "ext": "YAML-tmLanguage",
@@ -49,28 +57,44 @@
     }
   },
   { "caption": "PackageDev: Rearrange YAML Syntax Definition",
-    "command": "rearrange_yaml_syntax_def"
+    "command": "packagedev_rearrange_yaml_syntax_def"
   },
 
   // Other
   { "caption": "PackageDev: New Build System",
-    "command": "new_resource_file",
+    "command": "packagedev_new_resource",
     "args": {"kind": "build_system"}
   },
   { "caption": "PackageDev: New Commands File",
-    "command": "new_resource_file",
+    "command": "packagedev_new_resource",
     "args": {"kind": "commands"}
   },
+  { "caption": "PackageDev: New Commands File (short)",
+    "command": "packagedev_new_resource",
+    "args": {"kind": "commands", "suffix": "short"}
+  },
   { "caption": "PackageDev: New Completions File",
-    "command": "new_resource_file",
+    "command": "packagedev_new_resource",
     "args": {"kind": "completions"}
   },
+  { "caption": "PackageDev: New Keymap File",
+    "command": "packagedev_new_resource",
+    "args": {"kind": "keymap"}
+  },
+  { "caption": "PackageDev: New Menu File (empty)…",
+    "command": "packagedev_new_resource",
+    "args": {"kind": "menu"}
+  },
+  { "caption": "PackageDev: New Main Menu File…",
+    "command": "packagedev_new_resource",
+    "args": {"kind": "menu", "suffix": "main"}
+  },
   { "caption": "PackageDev: New Settings File",
-    "command": "new_resource_file",
+    "command": "packagedev_new_resource",
     "args": {"kind": "settings"}
   },
   { "caption": "PackageDev: New Textmate Preferences",
-    "command": "new_resource_file",
+    "command": "packagedev_new_resource",
     "args": {"kind": "tm_preferences"}
   },
 ]

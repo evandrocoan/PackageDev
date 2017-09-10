@@ -1,34 +1,34 @@
 TEMPLATES = dict(
     build_system="""\
 {
-\t"cmd": ["${0:make}"]
+\t"cmd": ["${0:make}"],
 }""",
-    commands="""\
-[
-  { "caption": "${1:PackageName}: ${2:My Caption for the Command Palette}",
-    "command": "${3:my_command}" },$0
-]""",
-    commands_default=R"""[
-  { "caption": "Preferences: ${1:PackageName}",
+    commands=R"""[
+  { "caption": "Preferences: ${1:${package_name:PackageName}}",
     "command": "edit_settings",
     "args": {
-      "base_file": "${packages}/$1/$1.sublime-settings",
+      "base_file": "\${packages}/$1/$1.sublime-settings",
       "default": "{\n\t\$0\n}\n"
     }
   },
   { "caption": "Preferences: $1 Key Bindings",
     "command": "edit_settings",
     "args": {
-      "base_file": "${packages}/$1/Default (${platform}).sublime-keymap",
+      "base_file": "\${packages}/$1/Default (\${platform}).sublime-keymap",
       "default": "[\n\t\$0\n]\n"
     }
   },
   { "caption": "$1: Open Readme",
     "command": "open_file",
     "args": {
-      "target": "${packages}/$1/README.md"
+      "target": "\${packages}/$1/README.md"
     }
   },$0
+]""",
+    commands_short="""\
+[
+  { "caption": "${1:${package_name:PackageName}}: ${2:My Caption for the Command Palette}",
+    "command": "${3:my_command}" },$0
 ]""",
     completions="""\
 {
@@ -37,10 +37,55 @@ TEMPLATES = dict(
     "completions": [
         { "trigger": "${2:some_trigger}", "contents": "${3:$2}" },$0
     ]
-}""".replace("    ", "\t"),  # noqa - line length
+}""".replace("    ", "\t"),
     settings="""{
 \t$0
 }""",
+    keymap="""[
+\t{ "keys": ["${1:ctrl+shift+h}"], "command": "${2:foo_bar}",$0 },
+]""",
+    menu="""[
+\t$0
+]""",
+    menu_main=R"""[
+  { "id": "preferences",
+    "children": [
+      { "caption": "Package Settings",
+        "mnemonic": "P",
+        "id": "package-settings",
+        "children": [
+          { "caption": "${1:${package_name:PackageName}}",
+            "children": [
+              { "caption": "README",
+                "command": "open_file",
+                "args": {
+                  "target": "\${packages}/$1/README.md"
+                }
+              },
+              { "caption": "-" },
+              { "caption": "Settings",
+                "command": "edit_settings",
+                "args": {
+                  "base_file": "\${packages}/$1/$1.sublime-settings",
+                  "default": "{\n\t\$0\n}\n"
+                }
+              },
+              { "caption": "Key Bindings",
+                "command": "edit_settings",
+                "args": {
+                  "base_file": "\${packages}/$1/Default (\${platform}).sublime-settings",
+                  "default": "[\n\t\$0\n]\n"
+                }
+              },$0
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
+""",
+    # no template for a mousemap because I don't want to encourage usage of it
     snippet_raw="",
     # based on the default "New Syntax..." command
     syntax_def=R"""%YAML 1.2

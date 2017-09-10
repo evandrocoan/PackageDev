@@ -9,10 +9,10 @@
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.mapping - meta.mapping meta.mapping
 //  ^^^^^^^^ meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
 //          ^ punctuation.separator.mapping.key-value.json
-//            ^^^^^^^^^^^^^^^^^^ meta.mapping.value.json meta.command-name.sublime-build string.quoted.double.json
-//             ^^^^^^^^^^^^^^^^ support.constant.command-name.sublime-build
+//            ^^^^^^^^^^^^^^^^^^ meta.mapping.value.json meta.command-name.sublime string.quoted.double.json
+//             ^^^^^^^^^^^^^^^^ support.constant.command-name.sublime
 //                              ^ punctuation.separator.mapping.pair.json
-//                               ^ invalid.illegal.expected-key.sublime-build
+//                               ^ invalid.illegal.expected-key.json
     "selector": "source.mylang",
 //  ^^^^^^^^^^ meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
 //   ^^^^^^^^ keyword.other.main.sublime-build
@@ -33,7 +33,7 @@
 //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ source.regexp.embedded.json-string
 
 
-    "working_dir": "${project_path:${folder/\.foo/$0-test/g}}",
+    "working_dir": "${project_path:${folder/\tfo\\\\o/$0-\\.test/g}}",
 //  ^^^^^^^^^^^^^ meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
 //   ^^^^^^^^^^^ keyword.other.main.sublime-build
 //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.mapping.value.json string.quoted.double.json
@@ -44,23 +44,28 @@
 //                                   ^^^^^^^ meta.placeholder-name.sublime-build
 //                                    ^^^^^ constant.other.placeholder.sublime-build
 //                                          ^ - meta.placeholder-name.sublime-build
-//                                          ^^ constant.character.escape.regexp
-//                                                ^^ keyword.other.backref-and-recursion.regexp-replacement
-//                                                        ^ constant.other.regex-modifier.placeholder.sublime-build
-//                                                         ^ keyword.other.block.end.placeholder.sublime-build
-//                                                          ^ keyword.other.block.end.placeholder.sublime-build
+//                                          ^^ constant.character.escape.json meta.literal.regexp
+//                                              ^^^^ constant.character.escape.regexp
+//                                              ^^ constant.character.escape.json
+//                                                  ^ meta.literal.regexp - constant.character.escape
+//                                                    ^^ keyword.other.backref-and-recursion.regexp-replacement
+//                                                       ^^^ constant.character.escape.regexp-replacement
+//                                                       ^^ constant.character.escape.json
+//                                                               ^ constant.other.regex-modifier.placeholder.sublime-build
+//                                                                ^ keyword.other.block.end.placeholder.sublime-build
+//                                                                 ^ keyword.other.block.end.placeholder.sublime-build
 
 // only built-in placeholders should be highlighted as constants
     "working_dir" : "${PARAM}",
 //                     ^^^^^ - constant.other.placeholder.sublime-build
 
     "osx": "test",
-//         ^ invalid.illegal.expected-mapping.sublime-build
+//         ^ invalid.illegal.expected-mapping.sublime
 
     "osx": {
 //  ^^^^^ meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
 //   ^^^ keyword.other.main.sublime-build
-//         ^ meta.mapping.value.json meta.os.sublime-build meta.mapping.json punctuation.section.mapping.begin.json
+//         ^ meta.mapping.value.json meta.platform.sublime-build meta.mapping.json punctuation.section.mapping.begin.json
         "file_regex": "^(...*?):([0-9]+): ([0-9]*)([^\\.]+)"
 //      ^^^^^^^^^^^^ meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
 //       ^^^^^^^^^^ keyword.other.main.sublime-build
@@ -75,7 +80,7 @@
     "env": "path",
 //  ^^^^^ meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
 //   ^^^ keyword.other.main.sublime-build
-//         ^^^^^^ invalid.illegal.expected-mapping.sublime-keymap
+//         ^^^^^^ invalid.illegal.expected-mapping.sublime
 
     "cmd":  ["python", "-u", "$file"],
 //  ^^^^^ meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
@@ -86,16 +91,19 @@
 //                             ^^^^ constant.other.placeholder.sublime-build
 
 // cmd should also accept a string (if shell: true)
-    "cmd": "command \"$file\" && ${file/\.ext/\.ty/g}",
+    "cmd": "command \"$file\" && ${file/\.ext/\\.ty/g}",
 //  ^^^^^ meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
 //   ^^^ keyword.other.main.sublime-build
 //         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.mapping.value.json meta.placeholder-string.sublime-build string.quoted.double.json
 //                     ^^^^ meta.placeholder-name.sublime-build
 //                     ^^^^ constant.other.placeholder.sublime-build
-//                                      ^^ constant.character.escape.regexp
-//                                            ^^ constant.character.escape.regexp-replacement
-//                                                 ^ constant.other.regex-modifier.placeholder.sublime-build
+//                                      ^^ invalid.illegal.unrecognized-string-escape.json
+//                                            ^^^ constant.character.escape.regexp-replacement
+//                                                  ^ constant.other.regex-modifier.placeholder.sublime-build
 //
+
+    "cmd": 1,
+//         ^ invalid.illegal.expected-sequence-or-string.sublime-build
 
     "shell_cmd": "python -u \"$file\" && ls",
 //  ^^^^^^^^^^^ meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
@@ -105,15 +113,15 @@
 //                             ^^^^ constant.other.placeholder.sublime-build
 
     "shell_cmd": ["$file"],
-//               ^ invalid.illegal.expected-string.sublime-build
+//               ^ invalid.illegal.expected-string.sublime
 
 
     "shell": false,
 //  ^^^^^^^ meta.build.collection.sublime-build meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
 //   ^^^^^ keyword.other.main.sublime-build
-//           ^^^^^ meta.mapping.value.json constant.language.json
+//           ^^^^^ meta.mapping.value.json constant.language.boolean.json
     "shell": "foo",
-//           ^^^^^ invalid.illegal.expected-boolean.sublime-build
+//           ^^^^^ invalid.illegal.expected-boolean.sublime
 
 
 // name is not a keyword outside variants
@@ -122,24 +130,26 @@
 //   ^^^^ - keyword.other.main.sublime-build
 
     "variants": [
-//              ^ meta.build.collection.sublime-build meta.mapping.value.json meta.variants.sublime-build meta.sequence.json punctuation.section.sequence.begin.json
+//              ^ meta.build.collection.sublime-build meta.mapping.value.json meta.variants.collection.sublime-build meta.sequence.json punctuation.section.sequence.begin.json
         "test"
-//      ^^^^^^ invalid.illegal.build.expected-mapping.sublime-build
+//      ^^^^^^ invalid.illegal.expected-mapping.sublime-build
         {
+//      ^ meta.variants.collection.sublime-build meta.sequence.json meta.variant.sublime-build meta.mapping.json punctuation.section.mapping.begin.json
             "name": "Foo",
-//          ^^^^^^ meta.mapping.value.json meta.variants.sublime-build meta.sequence.json meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
+//          ^^^^^^ meta.mapping.value.json meta.variants.collection.sublime-build meta.sequence.json meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
 //           ^^^^ keyword.other.main.sublime-build
 //                  ^^^^^ meta.mapping.value.json meta.mapping.value.json string.quoted.double.json
+//                   ^^^ meta.variant-name.sublime-build entity.name.variant.sublime-build
 
             "target": "do_something",
-//          ^^^^^^^^ meta.mapping.value.json meta.variants.sublime-build meta.sequence.json meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
+//          ^^^^^^^^ meta.mapping.value.json meta.variants.collection.sublime-build meta.sequence.json meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
 //           ^^^^^^ keyword.other.main.sublime-build
-//                    ^^^^^^^^^^^^^^ meta.mapping.value.json meta.mapping.value.json meta.command-name.sublime-build string.quoted.double.json
-//                     ^^^^^^^^^^^^ support.constant.command-name.sublime-build
+//                    ^^^^^^^^^^^^^^ meta.mapping.value.json meta.mapping.value.json meta.command-name.sublime string.quoted.double.json
+//                     ^^^^^^^^^^^^ support.constant.command-name.sublime
 
 // selector is not a keyword inside variants
             "selector": "source.mylang",
-//          ^^^^^^^^^^ meta.mapping.value.json meta.variants.sublime-build meta.sequence.json meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
+//          ^^^^^^^^^^ meta.mapping.value.json meta.variants.collection.sublime-build meta.sequence.json meta.mapping.key.json meta.main-key.sublime-build string.quoted.double.json
 //           ^^^^^^^^ - keyword.other.main.sublime-build
 
             "osx": {
@@ -157,5 +167,5 @@
 
   ,[]//fgfg
 // <- - invalid.illegal
-//^^^ invalid.illegal.expected-comment-or-eof.sublime-build
+//^^^ invalid.illegal.expected-comment-or-eof.sublime
 //   ^^ comment.line.double-slash - invalid.illegal

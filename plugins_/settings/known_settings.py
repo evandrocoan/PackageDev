@@ -335,20 +335,22 @@ class KnownSettings(object):
                 point = view.size()
                 is_empty_line = not view.substr(view.line(point)).strip()
                 bol = "{\n\t" if is_empty_line else "\n{\n\t"
-                eol = "\n}\n"
+                eol = ",$0\n}\n"
             else:
                 # insert first value to user file
                 point = value_regions[-1].end() - 1
                 bol, eol = "\t", "\n"
         else:
             point = value_regions[-1].end()
-            if view.substr(point) == ",":
+            # Due to the scope selector,
+            # the comma will always be the last character of the last region found,
+            # if it exists.
+            if view.substr(point - 1) == ",":
                 # already have a comma after last entry
-                eol, bol = "", "\n"
-                point += 1
+                bol, eol = "\n", ","
             else:
                 # add a comma after last entry
-                eol, bol = "", ",\n"
+                bol, eol = ",\n", ""
         # format and insert the snippet
         snippet = self._key_snippet(key, self.defaults[key], bol, eol)
         view.sel().clear()
@@ -414,7 +416,7 @@ class KnownSettings(object):
             #
             #   "key": "value"
             #
-            fmt = '{bol}"{key}": "${{1:{encoded}}}"{eol}$0'
+            fmt = '{bol}"{key}": "${{1:{encoded}}}"{eol}'
             encoded = encoded[1:-1]  # strip quotation
         elif isinstance(value, list):
             # create the snippet for json lists and exclude brackets
@@ -425,7 +427,7 @@ class KnownSettings(object):
             #      value
             #   ]
             #
-            fmt = '{bol}"{key}":\n[\n\t${{1:{encoded}}}\n]{eol}$0'
+            fmt = '{bol}"{key}":\n[\n\t${{1:{encoded}}}\n]{eol}'
             encoded = encoded[1:-1]  # strip brackets
         elif isinstance(value, dict):
             # create the snippet for json dictionaries braces
@@ -436,10 +438,10 @@ class KnownSettings(object):
             #      value
             #   }
             #
-            fmt = '{bol}"{key}":\n{{\n\t${{1:{encoded}}}\n}}{eol}$0'
+            fmt = '{bol}"{key}":\n{{\n\t${{1:{encoded}}}\n}}{eol}'
             encoded = encoded[1:-1]  # strip braces
         else:
-            fmt = '{bol}"{key}": ${{1:{encoded}}}{eol}$0'
+            fmt = '{bol}"{key}": ${{1:{encoded}}}{eol}'
         return fmt.format(**locals())
 
     def value_completions(self, view, prefix, point):

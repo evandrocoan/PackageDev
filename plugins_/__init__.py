@@ -1,6 +1,7 @@
 # import ST-interfacing classes from sub-modules
 
 from .command_completions import *  # noqa
+from .create_package import *  # noqa
 from .file_conversion import *  # noqa
 from .new_resource_file import *  # noqa
 from .settings import *  # noqa
@@ -53,15 +54,16 @@ def _check_missing():
 
         for k, v in module.__dict__.items():
             if k in special_callbacks:
-                special_callbacks[k].append(v)
+                special_callbacks[k].append(v.__module__)
             elif _is_plugin_class(v):
                 plugin_classes.append(v)
 
     print("found {} plugin classes".format(len(plugin_classes)))
     print("special callbacks: {}".format(special_callbacks))
 
-    # assert that every item in plugin_classes is also in globals()
+    # assert that every item in plugin_classes is also in globals(),
+    # but exclude "WindowAndTextCommand" class from sublime_lib
     imported = globals().values()
     for plugin in plugin_classes:
-        if plugin not in imported:
+        if plugin not in imported and plugin.__name__ != "WindowAndTextCommand":
             print("[!!] plugin missing: {p.__module__}.{p.__qualname__} ({p})".format(p=plugin))

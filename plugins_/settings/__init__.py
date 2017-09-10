@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+import html.parser
 import logging
 import os
 
@@ -7,8 +7,10 @@ import sublime_plugin
 
 from ..lib import get_setting
 from ..lib.sublime_lib.constants import style_flags_from_list
+from ..lib.weakmethod import WeakMethodProxy
 
-from .region_math import VALUE_SCOPE, KEY_SCOPE, get_key_region_at, get_last_key_region
+from .region_math import (VALUE_SCOPE, KEY_SCOPE, KEY_COMPLETIONS_SCOPE,
+                          get_key_region_at, get_last_key_region)
 from .known_settings import KnownSettings
 
 __all__ = (
@@ -80,7 +82,8 @@ class SettingsListener(sublime_plugin.ViewEventListener):
     def is_applicable(cls, settings):
         """Enable the listener for Sublime Settings syntax only."""
         syntax = settings.get('syntax') or ""
-        return syntax.endswith("/Sublime Text Settings.sublime-syntax")
+        return (syntax.endswith("/Sublime Text Settings.sublime-syntax")
+                or syntax.endswith("/Sublime Text Project.sublime-syntax"))
 
     def __init__(self, view):
         """Initialize view event listener object."""
@@ -91,13 +94,17 @@ class SettingsListener(sublime_plugin.ViewEventListener):
 
         filepath = view.file_name()
         l.debug("initializing SettingsListener for %r", view.file_name())
+
         if filepath and filepath.endswith(".sublime-settings"):
             filename = os.path.basename(filepath)
             self.known_settings = KnownSettings(filename)
             self.known_settings.add_on_loaded(self.do_linting)
+        elif filepath and filepath.endswith(".sublime-project"):
+            self.known_settings = KnownSettings("Preferences.sublime-settings")
+            self.known_settings.add_on_loaded(self.do_linting)
         else:
             self.known_settings = None
-            l.error("Not a Sublime Text Settings file: %r", filepath)
+            l.error("Not a Sublime Text Settings or Project file: %r", filepath)
 
         self.phantom_set = sublime.PhantomSet(self.view, "sublime-settings-edit")
         if self._is_base_settings_view():
@@ -132,10 +139,10 @@ class SettingsListener(sublime_plugin.ViewEventListener):
         """
         if self.known_settings and len(locations) == 1:
             point = locations[0]
+            self.is_completing_key = False
             if self.view.match_selector(point, VALUE_SCOPE):
-                self.is_completing_key = False
                 completions_aggregator = self.known_settings.value_completions
-            else:
+            elif self.view.match_selector(point, KEY_COMPLETIONS_SCOPE):
                 completions_aggregator = self.known_settings.key_completions
                 self.is_completing_key = True
             return completions_aggregator(self.view, prefix, point)
@@ -163,7 +170,6 @@ class SettingsListener(sublime_plugin.ViewEventListener):
 
         self.view.show_popup(
             content=POPUP_TEMPLATE.format(body),
-            on_navigate=self.on_navigate,
             location=location,
             max_width=window_width,
             flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY | sublime.COOPERATE_WITH_AUTO_COMPLETE
@@ -171,7 +177,9 @@ class SettingsListener(sublime_plugin.ViewEventListener):
 
     def on_navigate(self, href):
         """Popup navigation event handler."""
-        command, argument = href.split(":")
+        command, _, argument = href.partition(":")
+        argument = html.parser.HTMLParser().unescape(argument)
+
         if command == 'edit':
             view_id = self.view.settings().get('edit_settings_other_view_id')
             user_view = sublime.View(view_id)
@@ -191,10 +199,11 @@ class SettingsListener(sublime_plugin.ViewEventListener):
     def do_linting(self):
         """Highlight all unknown settings keys."""
         unknown_regions = None
+        file_name = self.view.file_name() or ""
         if (
             self.known_settings
-            # file_name maybe None if self.known_settings is None
-            and USER_PATH in self.view.file_name()
+            and (USER_PATH in file_name
+                 or file_name.endswith(".sublime-project"))
             and get_setting('settings.linting')
         ):
             unknown_regions = [
@@ -205,7 +214,8 @@ class SettingsListener(sublime_plugin.ViewEventListener):
         if unknown_regions:
             styles = get_setting(
                 'settings.highlight_styles',
-                ['DRAW_SOLID_UNDERLINE', 'DRAW_NO_FILL', 'DRAW_NO_OUTLINE'])
+                ['DRAW_SOLID_UNDERLINE', 'DRAW_NO_FILL', 'DRAW_NO_OUTLINE']
+            )
             self.view.add_regions(
                 'unknown_settings_keys',
                 unknown_regions,
@@ -224,12 +234,14 @@ class SettingsListener(sublime_plugin.ViewEventListener):
         for region in key_regions:
             key_name = self.view.substr(region)
             phantom_region = sublime.Region(region.end() + 1)  # before colon
-            content = "<a href=\"edit:{0}\">✏</a>".format(key_name)
+            content = "<a href=\"edit:{0}\">✏</a>".format(html.escape(key_name))
             phantoms.append(sublime.Phantom(
-                phantom_region,
-                PHANTOM_TEMPLATE.format(content),
-                sublime.LAYOUT_INLINE,
-                self.on_navigate,
+                region=phantom_region,
+                content=PHANTOM_TEMPLATE.format(content),
+                layout=sublime.LAYOUT_INLINE,
+                # use weak reference for callback
+                # to allow for phantoms to be cleaned up in __del__
+                on_navigate=WeakMethodProxy(self.on_navigate),
             ))
 
         self.phantom_set.update(phantoms)
@@ -242,22 +254,13 @@ class SettingsListener(sublime_plugin.ViewEventListener):
 # which is why we need an EventListener as well.
 class GlobalSettingsListener(sublime_plugin.EventListener):
 
-    def _find_view_event_listener(self, view):
-        if not SettingsListener.is_applicable(view.settings()):
-            # speed up?
-            return None
-        for listener in sublime_plugin.event_listeners_for_view(view):
-            if isinstance(listener, SettingsListener):
-                return listener
-        return None
-
     def on_post_text_command(self, view, command_name, args):
         if command_name == 'hide_auto_complete':
-            listener = self._find_view_event_listener(view)
+            listener = sublime_plugin.find_view_event_listener(view, SettingsListener)
             if listener:
                 listener.is_completing_key = False
         elif command_name in ('commit_completion', 'insert_best_completion'):
-            listener = self._find_view_event_listener(view)
+            listener = sublime_plugin.find_view_event_listener(view, SettingsListener)
             if not (listener and listener.is_completing_key):
                 return
 
@@ -274,6 +277,6 @@ class GlobalSettingsListener(sublime_plugin.EventListener):
                 listener.show_popup_for(key_region)
 
     def on_post_save(self, view):
-        listener = self._find_view_event_listener(view)
-        if listener:
+        listener = sublime_plugin.find_view_event_listener(view, SettingsListener)
+        if listener and listener.known_settings:
             listener.known_settings.trigger_settings_reload()

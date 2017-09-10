@@ -4,12 +4,13 @@ from os import path
 import re
 from collections import namedtuple
 
+from .lib import get_setting
 from .lib.sublime_lib.constants import style_flags_from_list
 
 __all__ = (
     'SyntaxTestHighlighterListener',
-    'AlignSyntaxTestCommand',
-    'SuggestSyntaxTestCommand',
+    'PackagedevAlignSyntaxTestCommand',
+    'PackagedevSuggestSyntaxTestCommand',
     'AssignSyntaxTestSyntaxListener',
 )
 
@@ -19,6 +20,11 @@ AssertionLineDetails = namedtuple(
 SyntaxTestHeader = namedtuple(
     'SyntaxTestHeader', ['comment_start', 'comment_end', 'syntax_file']
 )
+
+
+def _show_tab_warning():
+    sublime.error_message("Syntax tests do not work properly with tabs as indentation."
+                          "\n\nYou MUST use spaces!")
 
 
 def get_syntax_test_tokens(view):
@@ -44,10 +50,22 @@ def get_syntax_test_tokens(view):
 class SyntaxTestHighlighterListener(sublime_plugin.ViewEventListener):
     header = None
 
+    @classmethod
+    def is_applicable(cls, settings):
+        """Disable the listener completely when tabs are used."""
+        return settings.get('translate_tabs_to_spaces', False)
+
     def __init__(self, view):
         super().__init__(view)
         self.on_modified_async()
         self.on_selection_modified_async()
+
+    def __del__(self):
+        # Settings were (most likely) changed to use tabs
+        # or plugin was unloaded.
+        # Complain about the former, if we have a test file.
+        if not self.is_applicable(self.view.settings()) and self.header:
+            _show_tab_warning()
 
     def on_modified_async(self):
         """If the view has a filename, and that file name starts with
@@ -132,7 +150,7 @@ class SyntaxTestHighlighterListener(sublime_plugin.ViewEventListener):
     def on_selection_modified_async(self):
         """Update highlighting of what the current line's test assertions point at."""
 
-        if len(self.view.sel()) == 0:
+        if not self.header or len(self.view.sel()) == 0:
             return
 
         lines, line = self.get_details_of_line_being_tested()
@@ -161,9 +179,8 @@ class SyntaxTestHighlighterListener(sublime_plugin.ViewEventListener):
         pos_end = min(line.begin() + col_end, line.end() + 1)
         region = sublime.Region(pos_start, pos_end)
 
-        prefs = sublime.load_settings('PackageDev.sublime-settings')
-        scope = prefs.get('syntax_test.highlight_scope', 'text')
-        styles = prefs.get('syntax_test.highlight_styles', ['DRAW_NO_FILL'])
+        scope = get_setting('syntax_test.highlight_scope', 'text')
+        styles = get_setting('syntax_test.highlight_styles', ['DRAW_NO_FILL'])
         style_flags = style_flags_from_list(styles)
 
         self.view.add_regions('current_syntax_test', [region], scope, '', style_flags)
@@ -184,7 +201,7 @@ class SyntaxTestHighlighterListener(sublime_plugin.ViewEventListener):
 
         keys = {
             "current_line_is_a_syntax_test": current_line_is_a_syntax_test,
-            "file_contains_syntax_tests": lambda: self.header,
+            "file_contains_syntax_tests": lambda: bool(self.header),
         }
 
         if key not in keys:
@@ -248,7 +265,7 @@ def find_common_scopes(scopes, skip_syntax_suffix):
     return shared_scopes.strip()
 
 
-class AlignSyntaxTestCommand(sublime_plugin.TextCommand):
+class PackagedevAlignSyntaxTestCommand(sublime_plugin.TextCommand):
 
     """Align the cursor with spaces to be to the right of the previous line's assertion."""
 
@@ -276,10 +293,10 @@ class AlignSyntaxTestCommand(sublime_plugin.TextCommand):
             next_col = details.assertion_colrange[1]
         col_diff = next_col - view.rowcol(cursor.begin())[1]
         view.insert(edit, cursor.end(), " " * col_diff)
-        view.run_command('suggest_syntax_test')
+        view.run_command('packagedev_suggest_syntax_test')
 
 
-class SuggestSyntaxTestCommand(sublime_plugin.TextCommand):
+class PackagedevSuggestSyntaxTestCommand(sublime_plugin.TextCommand):
     """Intelligently suggest where the syntax test assertions should be placed.
 
     This is based on the scopes of the line being tested, and where they change.
@@ -338,8 +355,7 @@ class SuggestSyntaxTestCommand(sublime_plugin.TextCommand):
                 if scope not in scopes:
                     scopes.append(scope)
 
-        prefs = sublime.load_settings('PackageDev.sublime-settings')
-        suggest_suffix = prefs.get('syntax_test.suggest_scope_suffix', True)
+        suggest_suffix = get_setting('syntax_test.suggest_scope_suffix', True)
 
         scope = find_common_scopes(scopes, not suggest_suffix)
 
@@ -366,4 +382,13 @@ class AssignSyntaxTestSyntaxListener(sublime_plugin.EventListener):
         test_header = get_syntax_test_tokens(view)
         if test_header and test_header.syntax_file:
             if view.settings().get('syntax', None) != test_header.syntax_file:
-                view.assign_syntax(test_header.syntax_file)
+                syntax = test_header.syntax_file
+                *_, file_name = syntax.rpartition('/')
+                if syntax in sublime.find_resources(file_name):
+                    view.assign_syntax(syntax)
+                else:  # file doesn't exist
+                    view.assign_syntax("Packages/Text/Plain text.tmLanguage")
+
+            # warn user if they try to do something stupid
+            if not view.settings().get('translate_tabs_to_spaces', False):
+                _show_tab_warning()

@@ -54,6 +54,7 @@ variables:
 #        ^^^^^^^^^^^^^ variable.other.sublime-syntax
 
   x10: '''{{identifier}}(?!\'')\b'
+#       ^^ constant.character.escape.yaml
 #                          ^^^ constant.character.escape.regexp.yaml
 #                             ^ - invalid
 
@@ -66,6 +67,15 @@ variables:
   x12: '-?{{nmstart}}{{nmchar}}*??'
 #                              ^^ keyword.operator.quantifier
 #                                ^ invalid.illegal.unexpected-quantifier
+
+# TODO These two tests are failing currently (need to be reversed).
+# They might be addressed later.
+  x13: '(?=>|[^ \t\n\$=<_+''*(),&:\[\][:alnum:]])'
+#                           ^ keyword.operator.quantifier.regexp
+  x14: '[x-'']+'
+#            ^ - keyword.control.set.regexp
+
+
 # BLOCKS #
 
   b1: | # comment
@@ -143,7 +153,7 @@ contexts:
 #                                            ^^^^^^^^^^^^^^^^^^^ variable.other.sublime-syntax
     - push: [main, Packages/JSON/JSON.sublime-syntax#comment]
 #     ^^^^ string.unquoted.plain.out.yaml keyword.control.flow.push.sublime-syntax
-#           ^^^^^^^^^^^^^^^^^^^^^^^^^ meta.flow-sequence.yaml
+#           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.include-list meta.flow-sequence.yaml
 #            ^^^^ meta.include.sublime-syntax string
 #                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.include.sublime-syntax string
       set: Packages/JSON/JSON.sublime-syntax#comment
@@ -210,6 +220,11 @@ contexts:
 #     ^^^^^^^^^^^^^^^^^^^^^^ string.unquoted.plain.out.yaml keyword.control.flow.include-prototype.sublime-syntax
 #                             ^^^^^ meta.expect-bool constant.language.boolean.yaml
 
+    - scope: >-
+        long.scope.name
+        over.multiple.lines
+#       ^^^^^^^^^^^^^^^^^^^ meta.scope.sublime-syntax string.unquoted.block.yaml
+#           ^ punctuation.separator.scope-segments.sublime-syntax
 
 variables:
 #^^^^^^^^ string.unquoted.plain.out.yaml keyword.control.flow.variables.sublime-syntax
@@ -232,3 +247,8 @@ contexts: !mytag
 #     ^^^ keyword.control.flow.pop.sublime-syntax
 #          ^^^^^^ storage.type.tag-handle.yaml
 #                 ^^^^ constant.language.boolean.yaml
+
+      pop:not a key
+#     ^^^ - keyword
+variables:also not a key
+# <- - keyword
