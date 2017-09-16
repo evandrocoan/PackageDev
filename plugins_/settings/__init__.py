@@ -55,9 +55,10 @@ POPUP_TEMPLATE = """
 PHANTOM_TEMPLATE = """
 <body id="sublime-settings-edit">
 <style>
-    body {{
+    html, body {{
         margin: 0;
         padding: 0;
+        background-color: var(--background);
     }}
     a {{
         text-decoration: none;
