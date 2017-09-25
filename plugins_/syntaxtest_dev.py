@@ -1,8 +1,10 @@
+from collections import namedtuple
+import logging
+import re
+from os import path
+
 import sublime
 import sublime_plugin
-from os import path
-import re
-from collections import namedtuple
 
 from .lib import get_setting
 from .lib.sublime_lib.constants import style_flags_from_list
@@ -13,6 +15,8 @@ __all__ = (
     'PackagedevSuggestSyntaxTestCommand',
     'AssignSyntaxTestSyntaxListener',
 )
+
+l = logging.getLogger(__name__)
 
 AssertionLineDetails = namedtuple(
     'AssertionLineDetails', ['comment_marker_match', 'assertion_colrange', 'line_region']
@@ -48,7 +52,6 @@ def get_syntax_test_tokens(view):
 
 
 class SyntaxTestHighlighterListener(sublime_plugin.ViewEventListener):
-    header = None
 
     @classmethod
     def is_applicable(cls, settings):
@@ -57,6 +60,7 @@ class SyntaxTestHighlighterListener(sublime_plugin.ViewEventListener):
 
     def __init__(self, view):
         super().__init__(view)
+        self.header = None
         self.on_modified_async()
         self.on_selection_modified_async()
 
@@ -64,7 +68,7 @@ class SyntaxTestHighlighterListener(sublime_plugin.ViewEventListener):
         # Settings were (most likely) changed to use tabs
         # or plugin was unloaded.
         # Complain about the former, if we have a test file.
-        if not self.is_applicable(self.view.settings()) and self.header:
+        if self.header and not self.is_applicable(self.view.settings()):
             _show_tab_warning()
 
     def on_modified_async(self):
@@ -74,11 +78,9 @@ class SyntaxTestHighlighterListener(sublime_plugin.ViewEventListener):
         """
 
         name = self.view.file_name()
-        if name:
-            name = path.basename(name)
-            if not name.startswith('syntax_test_'):
-                self.header = None
-                return
+        if name and not path.basename(name).startswith('syntax_test_'):
+            self.header = None
+            return
         self.header = get_syntax_test_tokens(self.view)
         # if there is no comment start token, clear the header
         if self.header and not self.header.comment_start:
@@ -378,17 +380,37 @@ class AssignSyntaxTestSyntaxListener(sublime_plugin.EventListener):
 
     """Assign target syntax highlighting to a syntax test file."""
 
-    def on_load_async(self, view):
-        test_header = get_syntax_test_tokens(view)
-        if test_header and test_header.syntax_file:
-            if view.settings().get('syntax', None) != test_header.syntax_file:
-                syntax = test_header.syntax_file
-                *_, file_name = syntax.rpartition('/')
-                if syntax in sublime.find_resources(file_name):
-                    view.assign_syntax(syntax)
-                else:  # file doesn't exist
-                    view.assign_syntax("Packages/Text/Plain text.tmLanguage")
+    PLAIN_TEXT = "Packages/Text/Plain text.tmLanguage"
 
-            # warn user if they try to do something stupid
-            if not view.settings().get('translate_tabs_to_spaces', False):
-                _show_tab_warning()
+    def on_load(self, view):
+        test_header = get_syntax_test_tokens(view)
+        if not test_header:
+            return
+        current_syntax = view.settings().get('syntax', None)
+        test_syntax = test_header.syntax_file
+
+        # resource-relative path specified
+        if "/" in test_syntax and current_syntax != test_syntax:
+            *_, file_name = test_syntax.rpartition("/")
+            if test_syntax in sublime.find_resources(file_name):
+                view.assign_syntax(test_syntax)
+            else:  # file doesn't exist
+                l.info("Couldn't find a file at %r", test_syntax)
+                view.assign_syntax(self.PLAIN_TEXT)
+
+        # just base name specified
+        elif not current_syntax.endswith(test_syntax):
+            syntax_candidates = sublime.find_resources(test_syntax)
+            if syntax_candidates:
+                l.debug("Found the following candidates for %r: %r",
+                        test_syntax, syntax_candidates)
+                view.assign_syntax(syntax_candidates[0])
+            else:
+                l.info("Couldn't find a syntax matching %r", test_syntax)
+                view.assign_syntax(self.PLAIN_TEXT)
+
+        # warn user if they try to do something stupid
+        if not view.settings().get('translate_tabs_to_spaces', False):
+            _show_tab_warning()
+
+    on_post_save_async = on_load
