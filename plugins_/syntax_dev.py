@@ -7,6 +7,7 @@ import sublime_plugin
 
 from .lib.sublime_lib.constants import style_flags_from_list
 from .lib.scope_data import COMPILED_HEADS
+from .lib import syntax_paths
 
 __all__ = (
     'SyntaxDefRegexCaptureGroupHighlighter',
@@ -15,12 +16,6 @@ __all__ = (
 )
 
 PACKAGE_NAME = __package__.split('.')[0]
-
-SYNTAX_DEF_FILENAME = ("Sublime Text Syntax Definition.sublime-syntax")
-SYNTAX_DEF_PATH = (
-    "Packages/{}/Package/Sublime Text Syntax Definition/{}"
-    .format(PACKAGE_NAME, SYNTAX_DEF_FILENAME)
-)
 
 
 def status(msg, console=False):
@@ -34,7 +29,7 @@ class SyntaxDefRegexCaptureGroupHighlighter(sublime_plugin.ViewEventListener):
 
     @classmethod
     def is_applicable(cls, settings):
-        return settings.get('syntax') == SYNTAX_DEF_PATH
+        return settings.get('syntax') == syntax_paths.SYNTAX_DEF
 
     def on_selection_modified(self):
         prefs = sublime.load_settings('PackageDev.sublime-settings')
@@ -162,7 +157,7 @@ class SyntaxDefCompletionsListener(sublime_plugin.ViewEventListener):
 
     @classmethod
     def is_applicable(cls, settings):
-        return settings.get('syntax') == SYNTAX_DEF_PATH
+        return settings.get('syntax') == syntax_paths.SYNTAX_DEF
 
     def _line_prefix(self, point):
         _, col = self.view.rowcol(point)
@@ -304,7 +299,7 @@ class PackagedevCommitScopeCompletionCommand(sublime_plugin.TextCommand):
         # Check if the completed value was the base suffix
         # and don't re-open auto complete in that case.
         listener = sublime_plugin.find_view_event_listener(self.view, SyntaxDefCompletionsListener)
-        if listener.base_suffix:
+        if listener and listener.base_suffix:
             point = self.view.sel()[0].a
             region = sublime.Region(point - len(listener.base_suffix) - 1, point)
             if self.view.substr(region) == "." + listener.base_suffix:
