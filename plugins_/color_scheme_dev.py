@@ -58,7 +58,8 @@ class ColorSchemeCompletionsListener(sublime_plugin.ViewEventListener):
 
     def scope_completions(self, prefix, locations):
         real_prefix = self._scope_prefix(locations)
-        if not real_prefix:
+        l.debug("Full prefix: %r", real_prefix)
+        if real_prefix is None:
             return None
         else:
             return completions_from_prefix(real_prefix)
@@ -71,7 +72,11 @@ class ColorSchemeCompletionsListener(sublime_plugin.ViewEventListener):
             return all(self.view.match_selector(point + offset, selector)
                        for point in locations)
 
-        if verify_scope("meta.function-call.var.sublime-color-scheme"):
+        if (
+            verify_scope("meta.function-call.var.sublime-color-scheme")
+            or (verify_scope("meta.function-call.var.sublime-color-scheme", -1)
+                and verify_scope("punctuation.definition.string.end.json"))
+        ):
             return self.variable_completions(prefix, locations)
 
         elif verify_scope("meta.scope-selector.sublime"):
