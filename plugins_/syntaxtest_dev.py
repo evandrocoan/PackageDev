@@ -27,8 +27,8 @@ SyntaxTestHeader = namedtuple(
 
 
 def _show_tab_warning():
-    sublime.error_message("Syntax tests do not work properly with tabs as indentation."
-                          "\n\nYou MUST use spaces!")
+    print("Syntax tests do not work properly with tabs as indentation."
+            "\n\nYou MUST use spaces!")
 
 
 def get_syntax_test_tokens(view):
