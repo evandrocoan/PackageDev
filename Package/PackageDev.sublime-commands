@@ -16,6 +16,10 @@
     "command": "packagedev_create_package",
   },
 
+  { "caption": "PackageDev: Open Package",
+    "command": "packagedev_open_package",
+  },
+
   // Snippets
   { "caption": "PackageDev: New Raw Snippet",
     "command": "packagedev_new_resource",
@@ -97,8 +101,12 @@
     "command": "packagedev_new_resource",
     "args": {"kind": "settings"}
   },
-  { "caption": "PackageDev: New Textmate Preferences",
+  { "caption": "PackageDev: New Textmate Preferences File",
     "command": "packagedev_new_resource",
     "args": {"kind": "tm_preferences"}
+  },
+  { "caption": "PackageDev: New Theme",
+    "command": "packagedev_new_resource",
+    "args": {"kind": "theme"}
   },
 ]

@@ -3,7 +3,8 @@ TEMPLATES = dict(
 {
 \t"cmd": ["${0:make}"],
 }""",
-    color_scheme="""{
+    color_scheme="""\
+{
     "variables": {
         ${0:// Define variables here}
     },
@@ -32,7 +33,8 @@ TEMPLATES = dict(
         },
     ]
 }""".replace("    ", "\t"),
-    commands=R"""[
+    commands=R"""\
+[
   { "caption": "Preferences: ${1:${package_name:PackageName}}",
     "command": "edit_settings",
     "args": {
@@ -175,6 +177,20 @@ contexts:
         - meta_scope: comment.line.double-slash.example-c
         - match: \$\n?
           pop: true
+""",
+    theme="""\
+{
+    "extends": "Default.sublime-theme",
+    "variables": {
+        "fg": "${1:black}",
+        "bg": "${2:white}",
+    },
+    "rules": [
+        {
+            "class": "$0",
+        }
+    ]
+}
 """,
     tm_preferences="""\
 <?xml version="1.0" encoding="UTF-8"?>

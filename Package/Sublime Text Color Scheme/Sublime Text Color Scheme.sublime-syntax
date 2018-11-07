@@ -122,6 +122,13 @@ contexts:
         2: keyword.other.rule.sublime-color-scheme
         3: punctuation.definition.string.end.json
       set: [expect-color-list-string-value, expect-colon]
+    - match: (")(foreground_adjust)(")
+      scope: meta.mapping.key.json meta.rule-key.sublime-color-scheme string.quoted.double.json
+      captures:
+        1: punctuation.definition.string.begin.json
+        2: keyword.other.rule.sublime-color-scheme
+        3: punctuation.definition.string.end.json
+      set: [expect-color-adjuster-value, expect-colon]
     - match: (")(font_style)(")
       scope: meta.mapping.key.json meta.rule-key.sublime-color-scheme string.quoted.double.json
       captures:
@@ -340,7 +347,7 @@ contexts:
         # so we push a prototype.
         - match: ''
           push:
-            - meta_scope: source.css
+            - meta_scope: source.css-color
             - include: CSS.sublime-syntax#color-values
           with_prototype:
             - match: (?=")
@@ -363,7 +370,7 @@ contexts:
           - meta_scope: meta.group.sublime-color-scheme
           - match: (?=\))
             pop: true
-          - match: \w+
+          - match: (?:--)?[\w-]+
             scope: variable.other.color-scheme
           - match: (?=")  # embed this here so we don't have to "with_prototype"
             pop: true
@@ -383,6 +390,27 @@ contexts:
         - include: comments
         - match: '[^\s\]\/,]+'
           scope: invalid.illegal.color.expected-string.sublime-color-scheme
+
+  expect-color-adjuster-value:
+    - match: (?=")
+      set: [mapping-value-meta, color-adjuster-string-pop]
+    - include: expect-string-rest
+
+  color-adjuster-string-pop:
+    - match: \"
+      scope: punctuation.definition.string.begin.json
+      set:
+        - meta_scope: string.quoted.double.json meta.color-adjuster.sublime-color-scheme
+        # Set a fake source scope so it's recognized as "embedded code",
+        # but don't set "source.css" to avoid completions provided by shipped package.
+        - meta_content_scope: source.css-color
+        - match: '"'
+          scope: punctuation.definition.string.end.json
+          pop: true
+        - match: $\n?
+          scope: invalid.illegal.unclosed-string.json
+          pop: true
+        - include: CSS.sublime-syntax#color-adjuster-functions
 
   expect-fontstyle-string-value:
     - match: (?=")

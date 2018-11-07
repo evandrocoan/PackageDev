@@ -12,6 +12,9 @@
               { "caption": "Create Package…",
                 "command": "packagedev_create_package" },
 
+              { "caption": "Open Package…",
+                "command": "packagedev_open_package" },
+
               { "caption": "-" },
 
               { "caption": "New Syntax Definition…",
@@ -62,7 +65,7 @@
                 "command": "packagedev_new_resource",
                 "args": {"kind": "completions"}
               },
-              { "caption": "PackageDev: New Keymap File",
+              { "caption": "New Keymap File",
                 "command": "packagedev_new_resource",
                 "args": {"kind": "keymap"}
               },
@@ -78,9 +81,13 @@
                 "command": "packagedev_new_resource",
                 "args": {"kind": "settings"}
               },
-              { "caption": "New Textmate Preferences…",
+              { "caption": "New Textmate Preferences File…",
                 "command": "packagedev_new_resource",
                 "args": {"kind": "tm_preferences"}
+              },
+              { "caption": "New Theme…",
+                "command": "packagedev_new_resource",
+                "args": {"kind": "theme"}
               },
               // { "caption": "New Plugin",
               //   "command": "packagedev_new_resource",

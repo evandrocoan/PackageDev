@@ -45,6 +45,9 @@ POPUP_TEMPLATE = """
         color: var(--orangish);
         font-size: 1.0rem;
     }}
+    html.light h1 {{
+        color: var(--redish);
+    }}
     h2 {{
         color: color(var(--html-background) blend(var(--foreground) 30%));
         font-size: 1.0rem;
@@ -68,7 +71,7 @@ PHANTOM_TEMPLATE = """
     html, body {{
         margin: 0;
         padding: 0;
-        background-color: var(--background);
+        background-color: transparent;
     }}
     a {{
         text-decoration: none;
@@ -241,6 +244,9 @@ class SettingsListener(sublime_plugin.ViewEventListener):
 
     def build_phantoms(self):
         """Add links to side-by-side base file for editing this setting in the user file."""
+        if self.view.is_loading():
+            sublime.set_timeout(self.build_phantoms, 20)
+            return
         l.debug("Building phantom set for view %r", self.view.file_name())
         key_regions = self.view.find_by_selector(KEY_SCOPE)
         phantoms = []
@@ -256,6 +262,7 @@ class SettingsListener(sublime_plugin.ViewEventListener):
                 # to allow for phantoms to be cleaned up in __del__
                 on_navigate=WeakMethodProxy(self.on_navigate),
             ))
+        l.debug("Made %d phantoms", len(phantoms))
 
         self.phantom_set.update(phantoms)
 
