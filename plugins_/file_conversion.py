@@ -2,11 +2,11 @@ import os
 import time
 
 import sublime
+import sublime_plugin
 
 from sublime_lib import OutputPanel
 from pathlib import Path
 
-from .lib.sublime_lib import WindowAndTextCommand
 from .lib.view_utils import get_text
 
 from .lib.fileconv import dumpers, loaders
@@ -15,7 +15,7 @@ __all__ = ('PackagedevConvertCommand',)
 
 
 # build command
-class PackagedevConvertCommand(WindowAndTextCommand):
+class PackagedevConvertCommand(sublime_plugin.WindowCommand):
     """Convert a file (view's buffer) of type ``source_format`` to type
     ``target_format``.
 
