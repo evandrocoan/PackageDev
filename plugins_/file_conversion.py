@@ -47,12 +47,9 @@ class PackagedevConvertCommand(sublime_plugin.WindowCommand):
                      kwargs={"target_format": "yaml", "default_flow_style": False})
             )
 
-    def run(self, edit=None, source_format=None, target_format=None, ext=None,
+    def run(self, source_format=None, target_format=None, ext=None,
             open_new_file=False, rearrange_yaml_syntax_def=False, _output=None, **kwargs):
         """Available parameters:
-
-        edit (sublime.Edit) = None
-            The edit parameter from TextCommand. Unused.
 
         source_format (str) = None
             The source format. Any of "yaml", "plist" or "json".
@@ -97,9 +94,9 @@ class PackagedevConvertCommand(sublime_plugin.WindowCommand):
             A more detailed description of each supported parameter for the respective dumper can
             be found in `fileconv/dumpers.py`.
         """
+        self.view = self.window.active_view()
 
         # Check the environment (view, args, ...)
-
         if self.view.is_dirty():
             # Save the file so that source and target file on the drive don't differ
             self.view.run_command("save")
