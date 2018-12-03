@@ -109,11 +109,11 @@ class SettingsListener(sublime_plugin.ViewEventListener):
         filepath = view.file_name()
         l.debug("initializing SettingsListener for %r", view.file_name())
 
-        if filepath and filepath.endswith(".sublime-settings"):
+        if filepath and ".sublime-settings" in filepath:
             filename = os.path.basename(filepath)
             self.known_settings = KnownSettings(filename)
             self.known_settings.add_on_loaded(self.do_linting)
-        elif filepath and filepath.endswith(".sublime-project"):
+        elif filepath and ".sublime-project" in filepath:
             self.known_settings = KnownSettings("Preferences.sublime-settings")
             self.known_settings.add_on_loaded(self.do_linting)
         else:
