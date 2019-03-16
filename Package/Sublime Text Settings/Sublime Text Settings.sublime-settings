@@ -1,4 +1,4 @@
 {
-	"extensions": ["sublime-settings"],
+	"extensions": ["sublime-settings", "sublime-settings.hide"],
 	"auto_complete_selector": "meta.mapping - comment - meta.setting-value",
 }

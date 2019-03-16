@@ -4,6 +4,7 @@
 name: Sublime Text Mousemap (JSON)
 file_extensions:
   - sublime-mousemap
+  - sublime-mousemap.hide
 scope: source.json.sublime.mousemap
 contexts:
   main:

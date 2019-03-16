@@ -4,6 +4,7 @@
 name: Sublime Text Keymap (JSON)
 file_extensions:
   - sublime-keymap
+  - sublime-keymap.hide
 scope: source.json.sublime.keymap
 
 contexts:

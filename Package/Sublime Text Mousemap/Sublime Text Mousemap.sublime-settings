@@ -1,4 +1,4 @@
 {
-    "extensions": ["sublime-mousemap"],
+    "extensions": ["sublime-mousemap", "sublime-mousemap.hide"],
     "auto_complete_selector": "- comment - string | meta.button-name | meta.main-key | meta.modifiers string | meta.command-name",
 }
