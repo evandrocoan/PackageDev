@@ -1,16 +1,19 @@
 {
-    "scope": "meta.rule.sublime-theme - meta.rule.sublime-theme meta meta - string - comment",
+    "scope": "(meta.rule.sublime-theme - meta.rule.sublime-theme meta meta | meta.parent-mapping.sublime-theme - meta.parent-mapping.sublime-theme meta meta) - string - comment",
     "completions": [
         // selectors
         { "trigger": "class\tselector", "contents": "\"class\": \"$0\"," },
         { "trigger": "settings\tselector", "contents": "\"settings\": [\"$0\"]," },
         { "trigger": "parents\tselector", "contents": "\"parents\": [$0]," },
+        { "trigger": "platforms\tselector", "contents": "\"platforms\": [$0]," },
         { "trigger": "attributes\tselector", "contents": "\"attributes\": [\"$0\"]," },
 
         // strings
         { "trigger": "font.face\tproperty", "contents": "\"font.face\": \"$0\"," },
+        { "trigger": "case\tproperty", "contents": "\"case\": \"${0:upper}\"," },
 
         // colors
+        { "trigger": "border_color\tproperty", "contents": "\"border_color\": \"$0\"," },
         { "trigger": "line_selection_color\tproperty", "contents": "\"line_selection_color\": \"$0\"," },
         { "trigger": "line_selection_border_color\tproperty", "contents": "\"line_selection_border_color\": \"$0\"," },
         { "trigger": "highlight_color\tproperty", "contents": "\"highlight_color\": \"$0\"," },
@@ -28,6 +31,10 @@
         { "trigger": "color_scheme_tint\tproperty", "contents": "\"color_scheme_tint\": \"$0\"," },
         { "trigger": "color_scheme_tint_2\tproperty", "contents": "\"color_scheme_tint_2\": \"$0\"," },
         { "trigger": "link_color\tproperty", "contents": "\"link_color\": \"$0\"," },
+        { "trigger": "left_shadow\tproperty", "contents": "\"left_shadow\": \"$0\"," },
+        { "trigger": "right_shadow\tproperty", "contents": "\"right_shadow\": \"$0\"," },
+        { "trigger": "top_shadow\tproperty", "contents": "\"top_shadow\": \"$0\"," },
+        { "trigger": "bottom_shadow\tproperty", "contents": "\"bottom_shadow\": \"$0\"," },
 
         // numbers
         { "trigger": "num_colors\tproperty", "contents": "\"num_colors\": ${0:0}," },
@@ -42,6 +49,10 @@
         { "trigger": "inside_spacing\tproperty", "contents": "\"inside_spacing\": ${0:0}," },
         { "trigger": "outside_vspacing\tproperty", "contents": "\"outside_vspacing\": ${0:0}," },
         { "trigger": "outside_hspacing\tproperty", "contents": "\"outside_hspacing\": ${0:0}," },
+        { "trigger": "left_shadow_size\tproperty", "contents": "\"left_shadow_size\": ${0:0}," },
+        { "trigger": "right_shadow_size\tproperty", "contents": "\"right_shadow_size\": ${0:0}," },
+        { "trigger": "top_shadow_size\tproperty", "contents": "\"top_shadow_size\": ${0:0}," },
+        { "trigger": "bottom_shadow_size\tproperty", "contents": "\"bottom_shadow_size\": ${0:0}," },
 
         // number sequences (optional)
         { "trigger": "inner_margin\tproperty", "contents": "\"inner_margin\": [${0:0}]," },
@@ -56,14 +67,14 @@
         { "trigger": "accent_tint_modifier\tproperty", "contents": "\"accent_tint_modifier\": [${0:0}]," },
 
         // floats
-        { "trigger": "line_selection_border_radius\tproperty", "contents": "\"line_selection_border_radius\": [${0:0.0}]," },
-        { "trigger": "line_selection_border_width\tproperty", "contents": "\"line_selection_border_width\": [${0:0.0}]," },
-        { "trigger": "indent\tproperty", "contents": "\"indent\": [${0:0.0}]," },
-        { "trigger": "indent_offset\tproperty", "contents": "\"indent_offset\": [${0:0.0}]," },
-        { "trigger": "opacity\tproperty", "contents": "\"opacity\": [${0:1.0}]," },
-        { "trigger": "viewport_opacity\tproperty", "contents": "\"viewport_opacity\": [${0:0.0}]," },
-        { "trigger": "hit_test_level\tproperty", "contents": "\"hit_test_level\": [${0:0.0}]," },
-        { "trigger": "font.size\tproperty", "contents": "\"font.size\": [${0:11.0}]," },
+        { "trigger": "line_selection_border_radius\tproperty", "contents": "\"line_selection_border_radius\": ${0:0.0}," },
+        { "trigger": "line_selection_border_width\tproperty", "contents": "\"line_selection_border_width\": ${0:0.0}," },
+        { "trigger": "indent\tproperty", "contents": "\"indent\": ${0:0.0}," },
+        { "trigger": "indent_offset\tproperty", "contents": "\"indent_offset\": ${0:0.0}," },
+        { "trigger": "opacity\tproperty", "contents": "\"opacity\": ${0:1.0}," },
+        { "trigger": "viewport_opacity\tproperty", "contents": "\"viewport_opacity\": ${0:0.0}," },
+        { "trigger": "hit_test_level\tproperty", "contents": "\"hit_test_level\": ${0:0.0}," },
+        { "trigger": "font.size\tproperty", "contents": "\"font.size\": ${0:11.0}," },
 
         // booleans TODO set opposite of defaults
         { "trigger": "dark_content\tproperty", "contents": "\"dark_content\": ${0:true}," },

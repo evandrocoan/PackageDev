@@ -5,12 +5,46 @@ import re
 import sublime
 import sublime_plugin
 
+from sublime_lib import ResourcePath
+
 from .lib.scope_data import completions_from_prefix
 from .lib import syntax_paths
 
 __all__ = (
     'ColorSchemeCompletionsListener',
+    'PackagedevEditSchemeCommand',
 )
+
+SCHEME_TEMPLATE = """\
+{
+  // http://www.sublimetext.com/docs/3/color_schemes.html
+  "variables": {
+    // "green": "#FF0000",
+  },
+  "globals": {
+    // "foreground": "var(green)",
+  },
+  "rules": [
+    {
+      // "scope": "string",
+      // "foreground": "#00FF00",
+    },
+  ],
+}""".replace("  ", "\t")
+
+VARIABLES = [
+    ("--background\tbuiltin color", "--background"),
+    ("--foreground\tbuiltin color", "--foreground"),
+    ("--accent\tbuiltin color", "--accent"),
+    ("--bluish\tbuiltin color", "--bluish"),
+    ("--cyanish\tbuiltin color", "--cyanish"),
+    ("--greenish\tbuiltin color", "--greenish"),
+    ("--orangish\tbuiltin color", "--orangish"),
+    ("--pinkish\tbuiltin color", "--pinkish"),
+    ("--purplish\tbuiltin color", "--purplish"),
+    ("--redish\tbuiltin color", "--redish"),
+    ("--yellowish\tbuiltin color", "--yellowish"),
+]
 
 l = logging.getLogger(__name__)
 
@@ -37,6 +71,10 @@ class ColorSchemeCompletionsListener(sublime_plugin.ViewEventListener):
     """
 
     @classmethod
+    def applies_to_primary_view_only(cls):
+        return False
+
+    @classmethod
     def is_applicable(cls, settings):
         return settings.get('syntax') in (syntax_paths.COLOR_SCHEME, syntax_paths.THEME)
 
@@ -50,7 +88,7 @@ class ColorSchemeCompletionsListener(sublime_plugin.ViewEventListener):
                                                       "entity.name.variable.sublime-theme")
         variables = set(self.view.substr(r) for r in variable_regions)
         l.debug("Found %d variables to complete: %r", len(variables), sorted(variables))
-        return sorted(("{}\tvariable".format(var), var) for var in variables)
+        return VARIABLES + sorted(("{}\tvariable".format(var), var) for var in variables)
 
     def _scope_prefix(self, locations):
         # Determine entire prefix
@@ -93,3 +131,22 @@ class ColorSchemeCompletionsListener(sublime_plugin.ViewEventListener):
 
         else:
             return None
+
+
+class PackagedevEditSchemeCommand(sublime_plugin.WindowCommand):
+
+    """Like syntax-specific settings but for the currently used color scheme."""
+
+    def run(self):
+        view = self.window.active_view()
+        if not view:
+            return
+        scheme_path = ResourcePath(view.settings().get('color_scheme'))
+        self.window.run_command(
+            'edit_settings',
+            {
+                "base_file": '/'.join(("${packages}",) + scheme_path.parts[1:]),
+                "user_file": "${packages}/User/" + scheme_path.stem + '.sublime-color-scheme',
+                "default": SCHEME_TEMPLATE,
+            },
+        )

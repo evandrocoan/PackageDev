@@ -209,7 +209,19 @@ contexts:
         - include: expect-key-rest
 
   globals-mapping-key:
-    - match: (")(accent|shadow|invisibles|caret|line_highlight|foreground|background|selection|selection_border|inactive_selection|inactive_selection_foreground|highlight|find_highlight|find_highlight_foreground|stack_guide|active_guide|guide|misspelling|brackets_foreground|bracket_contents_foreground|tags_foreground|minimap_border|gutter|gutter_foreground|rulers|fold_marker)(")
+    - match: |-
+        (?x)
+        (")(
+          accent|shadow|invisibles|caret|line_highlight
+          |foreground|background|selection|selection_border|inactive_selection|inactive_selection_foreground
+          |highlight|find_highlight|find_highlight_foreground
+          |stack_guide|active_guide|guide
+          |misspelling
+          |brackets_foreground|bracket_contents_foreground|tags_foreground
+          |minimap_border|gutter|gutter_foreground|rulers|fold_marker
+          |line_diff_(?:modified|added|deleted) # added in 3186 & 3189
+          |block_caret # added in 3190
+        )(")
       scope: meta.mapping.key.json meta.globals-key.sublime-color-scheme string.quoted.double.json
       captures:
         1: punctuation.definition.string.begin.json
@@ -223,7 +235,7 @@ contexts:
         2: entity.name.globals.sublime-color-scheme
         3: punctuation.definition.string.end.json
       set: [expect-string-value, expect-colon]
-    - match: (")(shadow_width|selection_corner_radius|selection_border_width)(")
+    - match: (")(shadow_width|selection_corner_radius|selection_border_width|line_diff_width)(")
       scope: meta.mapping.key.json meta.globals-key.sublime-color-scheme string.quoted.double.json
       captures:
         1: punctuation.definition.string.begin.json
@@ -354,7 +366,31 @@ contexts:
               pop: true
             - include: string-escape
             - include: color-var-function
+            - include: color-min-contrast-function
         - include: string-escape
+
+  color-min-contrast-function:
+    - match: \b(min-contrast)(?=\()
+      scope: support.function.min-contrast.sublime-color-scheme
+      push:
+        - meta_scope: meta.function-call.min-contrast.sublime-color-scheme
+        - match: \)
+          scope: meta.group.sublime-color-scheme punctuation.definition.group.end.sublime-color-scheme
+          pop: true
+        - match: \(
+          scope: punctuation.definition.group.begin.sublime-color-scheme
+          push:
+            - meta_scope: meta.group.sublime-color-scheme
+            - match: (?=\))
+              pop: true
+            - match: (?=")  # embed this here so we don't have to "with_prototype"
+              pop: true
+            - include: color-var-function
+            - include: CSS.sublime-syntax#color-values
+            - include: CSS.sublime-syntax#percentage-type
+            - include: CSS.sublime-syntax#numeric-values
+        - match: (?=")
+          pop: true
 
   color-var-function:
     - match: \b(var)(?=\()
@@ -367,13 +403,13 @@ contexts:
         - match: \(
           scope: punctuation.definition.group.begin.sublime-color-scheme
           push:
-          - meta_scope: meta.group.sublime-color-scheme
-          - match: (?=\))
-            pop: true
-          - match: (?:--)?[\w-]+
-            scope: variable.other.color-scheme
-          - match: (?=")  # embed this here so we don't have to "with_prototype"
-            pop: true
+            - meta_scope: meta.group.sublime-color-scheme
+            - match: (?=\))
+              pop: true
+            - match: (?:--)?[\w-]+
+              scope: variable.other.color-scheme
+            - match: (?=")  # embed this here so we don't have to "with_prototype"
+              pop: true
         - match: (?=")
           pop: true
   color-list-pop:

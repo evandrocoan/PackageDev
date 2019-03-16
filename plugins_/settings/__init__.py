@@ -5,13 +5,14 @@ import os
 import sublime
 import sublime_plugin
 
+from sublime_lib.flags import RegionOption
+
 from ..lib import get_setting
-from ..lib.flags import style_flags_from_list
 from ..lib.weakmethod import WeakMethodProxy
 
 from .region_math import (VALUE_SCOPE, KEY_SCOPE, KEY_COMPLETIONS_SCOPE,
                           get_key_region_at, get_last_key_region)
-from .known_settings import KnownSettings
+from .known_settings import KnownSettings, PREF_FILE
 
 __all__ = (
     'SettingsListener',
@@ -81,16 +82,36 @@ PHANTOM_TEMPLATE = """
 </body>
 """
 
+WIDGET_SETTINGS_NAMES = {
+    "Console Input Widget",
+    "Regex Format Widget",
+    "Regex Replace Widget",
+    "Regex Widget",
+    "Widget",
+}
+
 # user package pattern
 USER_PATH = "{0}Packages{0}User{0}".format(os.sep)
 
-# logging
 l = logging.getLogger(__name__)
+
+
+def is_widget_file(filename):
+    basename, ext = os.path.splitext(filename)
+    return (
+        ext == ".sublime-settings"
+        and filename in WIDGET_SETTINGS_NAMES
+        or any(filename.startswith(name + " - ") for name in WIDGET_SETTINGS_NAMES)
+    )
 
 
 class SettingsListener(sublime_plugin.ViewEventListener):
 
     is_completing_key = False
+
+    @classmethod
+    def applies_to_primary_view_only(cls):
+        return False
 
     @classmethod
     def is_applicable(cls, settings):
@@ -109,15 +130,18 @@ class SettingsListener(sublime_plugin.ViewEventListener):
         filepath = view.file_name()
         l.debug("initializing SettingsListener for %r", view.file_name())
 
-        if filepath and ".sublime-settings" in filepath:
+        is_widget_file(filepath)
+        self.known_settings = None
+        if filepath:
             filename = os.path.basename(filepath)
-            self.known_settings = KnownSettings(filename)
-            self.known_settings.add_on_loaded(self.do_linting)
-        elif filepath and ".sublime-project" in filepath:
-            self.known_settings = KnownSettings("Preferences.sublime-settings")
+            if ".sublime-project" in filepath or is_widget_file(filename):
+                self.known_settings = KnownSettings(PREF_FILE)
+            elif ".sublime-settings" in filepath:
+                self.known_settings = KnownSettings(filename)
+
+        if self.known_settings:
             self.known_settings.add_on_loaded(self.do_linting)
         else:
-            self.known_settings = None
             l.error("Not a Sublime Text Settings or Project file: %r", filepath)
 
         self.phantom_set = sublime.PhantomSet(self.view, "sublime-settings-edit")
@@ -237,7 +261,7 @@ class SettingsListener(sublime_plugin.ViewEventListener):
                 unknown_regions,
                 scope=get_setting('settings.highlight_scope', "text"),
                 icon='dot',
-                flags=style_flags_from_list(styles)
+                flags=RegionOption(*styles)
             )
         else:
             self.view.erase_regions('unknown_settings_keys')
